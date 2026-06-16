@@ -5,17 +5,29 @@ import random
 import threading
 import time
 import requests as req_lib
+import json
 
 app = Flask(__name__)
 
-# Pobranie klucza z Secrets Replit
+# ===== GROQ API =====
 client = Groq(api_key=os.environ.get("Helper_Bot"))
 
-SYSTEM_PROMPT = """
+# ===== LOAD KNOWLEDGE BASE =====
+with open("knowledge.json", "r", encoding="utf-8") as f:
+    KNOWLEDGE = json.load(f)
+
+# ===== SYSTEM PROMPT Z BAZY =====
+SYSTEM_PROMPT = f"""
 You are Helper_Bot in Roblox Mini Games.
-Creator: NikoPro123goo
-Game modes: Obby, Jump or Die, Brick Drop, Hot Space
-Disco Room is NOT a mode, just a fun chill area
+
+Creator: {KNOWLEDGE.get("creator", "Unknown")}
+
+Game modes: {", ".join(KNOWLEDGE.get("modes", []))}
+
+Places: {KNOWLEDGE.get("places", [])}
+
+Updates: {KNOWLEDGE.get("updates", [])}
+
 Rules:
 - Help players
 - Recommend only Mini Games modes
@@ -23,69 +35,69 @@ Rules:
 - Be friendly like an NPC helper
 """
 
-# Szybkie odpowiedzi na podziękowania
-THANK_RESPONSES = ["Nie ma sprawy!", "No problem!", "You're welcome!", "Spoko!", "Glad I could help!"]
+# ===== QUICK RESPONSES =====
+THANK_RESPONSES = [
+    "Nie ma sprawy!",
+    "No problem!",
+    "You're welcome!",
+    "Spoko!",
+    "Glad I could help!"
+]
 
-# Strona testowa
+# ===== HOME =====
 @app.route("/")
 def home():
     return "Helper_Bot działa!"
 
-# Endpoint pytania
+# ===== ASK =====
 @app.route("/ask", methods=["POST"])
 def ask():
     try:
-        # Logowanie otrzymanych danych
-        print(f"[DEBUG] Otrzymano request: {request.data}")
-
         data = request.get_json(force=True, silent=True)
+
         if not data or "question" not in data:
-            print("[DEBUG] Brak pola 'question' w danych")
             return jsonify({"answer": "No question received."})
 
         question = data["question"]
-        print(f"[DEBUG] Pytanie: {question}")
+        print(f"[QUESTION] {question}")
 
-        # Szybka reakcja na thanks / dzięki
+        # thanks system
         if any(word in question.lower() for word in ["thanks","thank you","dzięki","dzieki","thx"]):
-            answer = random.choice(THANK_RESPONSES)
-            print(f"[DEBUG] Szybka odpowiedź: {answer}")
-            return jsonify({"answer": answer})
+            return jsonify({"answer": random.choice(THANK_RESPONSES)})
 
-        # Wywołanie AI Groq - ZMIENIONY MODEL
-        print("[DEBUG] Wywoływanie Groq API...")
+        # AI CALL
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",  # ZMIENIONY MODEL
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": question}
             ],
-            max_tokens=300
+            max_tokens=250
         )
 
         answer = response.choices[0].message.content
-        print(f"[DEBUG] Odpowiedź Groq: {answer}")
+
         return jsonify({"answer": answer})
 
     except Exception as e:
-        print(f"[ERROR] Błąd: {type(e).__name__}: {e}")
+        print(f"[ERROR] {e}")
         return jsonify({"answer": f"AI error: {type(e).__name__}", "error": str(e)})
 
-# ===== Self-ping: utrzymuje serwer aktywny =====
+# ===== KEEP ALIVE =====
 def keep_alive():
     port = os.environ.get("PORT", "5000")
+
     while True:
-        time.sleep(300)  # co 5 minut
+        time.sleep(300)
         try:
             r = req_lib.get(f"http://127.0.0.1:{port}/", timeout=10)
-            print(f"[PING] Serwer aktywny - status: {r.status_code}")
+            print(f"[PING] OK {r.status_code}")
         except Exception as e:
-            print(f"[PING] Błąd ping: {e}")
+            print(f"[PING ERROR] {e}")
 
-ping_thread = threading.Thread(target=keep_alive, daemon=True)
-ping_thread.start()
+threading.Thread(target=keep_alive, daemon=True).start()
 
-# Start serwera
+# ===== START =====
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
