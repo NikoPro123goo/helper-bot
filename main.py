@@ -16,9 +16,18 @@ client = Groq(api_key=os.environ.get("Helper_Bot"))
 with open("knowledge.json", "r", encoding="utf-8") as f:
     KNOWLEDGE = json.load(f)
 
-UPDATES_TEXT = "\n".join(KNOWLEDGE.get("updates", []))
+# ===== UPDATE SYSTEM =====
+LATEST_UPDATES = "\n".join(KNOWLEDGE.get("latest_updates", []))
 
-print("[UPDATES]", KNOWLEDGE.get("updates", []))
+UPDATE_HISTORY = "\n".join(
+    [
+        f"{u['date']} - {u['name']} - {u['description']}"
+        for u in KNOWLEDGE.get("update_history", [])
+    ]
+)
+
+print("[LATEST UPDATES]", KNOWLEDGE.get("latest_updates", []))
+print("[UPDATE HISTORY]", KNOWLEDGE.get("update_history", []))
 
 # ===== SYSTEM PROMPT =====
 SYSTEM_PROMPT = f"""
@@ -42,20 +51,23 @@ Place (NOT a mode):
 - Disco Room:
 {KNOWLEDGE["places"][0]["description"]}
 
-Known updates:
+LATEST UPDATES (current):
+{LATEST_UPDATES}
 
-{UPDATES_TEXT}
+UPDATE HISTORY (older updates):
+{UPDATE_HISTORY}
 
 RULES:
 - Do not invent anything not in knowledge
-- Use the Known updates section when asked about updates
+- If user asks about latest updates, use LATEST UPDATES
+- If user asks about old updates, use UPDATE HISTORY
+- If user asks "what was before X", use UPDATE HISTORY
 - If there are no updates, say "No updates available yet"
-- If you don't know something, say you don't know
 - Always respond in the same language as the user
-- If the user writes in Polish, respond only in Polish
-- If the user writes in English, respond only in English
+- If Polish → respond ONLY in Polish
+- If English → respond ONLY in English
 - Never mix languages
-- Be short, helpful and NPC-like
+- Be short and NPC-like
 """
 
 # ===== QUICK RESPONSES =====
@@ -86,7 +98,7 @@ def ask():
 
         print("[QUESTION]", question)
 
-        # szybkie odpowiedzi na podziękowania
+        # thanks system
         if any(word in question.lower() for word in [
             "thanks",
             "thank you",
@@ -98,7 +110,7 @@ def ask():
             print("[ANSWER - THANKS]", answer)
             return jsonify({"answer": answer})
 
-        # ===== AI CALL =====
+        # AI CALL
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
@@ -131,26 +143,15 @@ def keep_alive():
         time.sleep(300)
 
         try:
-            r = req_lib.get(
-                f"http://127.0.0.1:{port}/",
-                timeout=10
-            )
-
+            r = req_lib.get(f"http://127.0.0.1:{port}/", timeout=10)
             print(f"[PING] OK {r.status_code}")
-
         except Exception as e:
             print("[PING ERROR]", e)
 
-threading.Thread(
-    target=keep_alive,
-    daemon=True
-).start()
+threading.Thread(target=keep_alive, daemon=True).start()
 
 # ===== START SERVER =====
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
 
-    app.run(
-        host="0.0.0.0",
-        port=port
-    )
+    app.run(host="0.0.0.0", port=port)
