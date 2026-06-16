@@ -16,6 +16,10 @@ client = Groq(api_key=os.environ.get("Helper_Bot"))
 with open("knowledge.json", "r", encoding="utf-8") as f:
     KNOWLEDGE = json.load(f)
 
+UPDATES_TEXT = "\n".join(KNOWLEDGE.get("updates", []))
+
+print("[UPDATES]", KNOWLEDGE.get("updates", []))
+
 # ===== SYSTEM PROMPT =====
 SYSTEM_PROMPT = f"""
 You are Helper_Bot in Roblox Mini Games.
@@ -38,19 +42,28 @@ Place (NOT a mode):
 - Disco Room:
 {KNOWLEDGE["places"][0]["description"]}
 
+Known updates:
+
+{UPDATES_TEXT}
+
 RULES:
 - Do not invent anything not in knowledge
+- Use the Known updates section when asked about updates
+- If there are no updates, say "No updates available yet"
 - If you don't know something, say you don't know
-- Respond in player's language (Polish or English)
-- Be short and NPC-like
+- Always respond in the same language as the user
+- If the user writes in Polish, respond only in Polish
+- If the user writes in English, respond only in English
+- Never mix languages
+- Be short, helpful and NPC-like
 """
 
 # ===== QUICK RESPONSES =====
 THANK_RESPONSES = [
     "Nie ma sprawy!",
+    "Spoko!",
     "No problem!",
     "You're welcome!",
-    "Spoko!",
     "Glad I could help!"
 ]
 
@@ -73,13 +86,19 @@ def ask():
 
         print("[QUESTION]", question)
 
-        # szybkie odpowiedzi na thanks
-        if any(word in question.lower() for word in ["thanks", "thank you", "dzięki", "dzieki", "thx"]):
+        # szybkie odpowiedzi na podziękowania
+        if any(word in question.lower() for word in [
+            "thanks",
+            "thank you",
+            "dzięki",
+            "dzieki",
+            "thx"
+        ]):
             answer = random.choice(THANK_RESPONSES)
             print("[ANSWER - THANKS]", answer)
             return jsonify({"answer": answer})
 
-        # AI CALL
+        # ===== AI CALL =====
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
@@ -91,7 +110,6 @@ def ask():
 
         answer = response.choices[0].message.content
 
-        # ===== DEBUG OUTPUT =====
         print("[ANSWER]", answer)
         print("[JSON RESPONSE]", {"answer": answer})
 
@@ -99,7 +117,11 @@ def ask():
 
     except Exception as e:
         print("[ERROR]", type(e).__name__, e)
-        return jsonify({"answer": f"AI error: {type(e).__name__}", "error": str(e)})
+
+        return jsonify({
+            "answer": f"AI error: {type(e).__name__}",
+            "error": str(e)
+        })
 
 # ===== KEEP ALIVE =====
 def keep_alive():
@@ -107,15 +129,28 @@ def keep_alive():
 
     while True:
         time.sleep(300)
+
         try:
-            r = req_lib.get(f"http://127.0.0.1:{port}/", timeout=10)
+            r = req_lib.get(
+                f"http://127.0.0.1:{port}/",
+                timeout=10
+            )
+
             print(f"[PING] OK {r.status_code}")
+
         except Exception as e:
             print("[PING ERROR]", e)
 
-threading.Thread(target=keep_alive, daemon=True).start()
+threading.Thread(
+    target=keep_alive,
+    daemon=True
+).start()
 
 # ===== START SERVER =====
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
