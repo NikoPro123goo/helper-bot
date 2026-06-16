@@ -44,5 +44,18 @@
       "name": "Helper_Bot Update",
       "description": "Improved Helper_Bot."
     }
+  ],
+
+  "events": [
+    {
+      "date": "2025-09-11",
+      "name": "Sonic Event",
+      "description": "Special Sonic-themed event in Mini Games with exclusive content."
+    },
+    {
+      "date": "2025-10-31",
+      "name": "Halloween Event",
+      "description": "Halloween special event with themed gameplay and decorations."
+    }
   ]
 }
