@@ -38,10 +38,13 @@ Place (NOT a game mode):
 - Disco Room:
 {KNOWLEDGE["places"][0]["description"]}
 
-Rules:
-- Never change or invent mechanics
-- Be short, clear, NPC-style
-- Respond in player's language
+RULES:
+- Always respond in the same language as the user message
+- If user writes in Polish → respond ONLY in Polish
+- If user writes in English → respond ONLY in English
+- Never mix languages in one response
+- Never change or invent mechanics of game modes
+- Be short, clear, NPC-like
 """
 
 # ===== QUICK RESPONSES =====
@@ -58,7 +61,7 @@ THANK_RESPONSES = [
 def home():
     return "Helper_Bot działa!"
 
-# ===== ASK ENDPOINT =====
+# ===== ASK =====
 @app.route("/ask", methods=["POST"])
 def ask():
     try:
