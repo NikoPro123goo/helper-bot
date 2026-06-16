@@ -1,30 +1,43 @@
 {
-  "creator": "NikoPro123goo",
+"creator": "NikoPro123goo",
 
-  "modes": [
-    {
-      "name": "Obby",
-      "description": "Classic obstacle course mode with checkpoints and platforms. Players complete a parkour-style map from start to finish."
-    },
-    {
-      "name": "Jump or Die",
-      "description": "Arena mode where red kill blocks appear and disappear. Players must constantly move, jump and avoid touching them. Touching a red block eliminates the player."
-    },
-    {
-      "name": "Brick Drop",
-      "description": "Survival last-man-standing mode. Players walk on a platform made of blocks. When a player steps on a block, it disappears. Last player alive wins."
-    }
-  ],
+"modes": [
+{
+"name": "Obby",
+"description": "Classic obstacle course mode with checkpoints and platforms. Players complete a parkour-style map from start to finish."
+},
+{
+"name": "Jump or Die",
+"description": "Arena mode where red kill blocks appear and disappear. Players must constantly move, jump and avoid touching them. Touching a red block eliminates the player."
+},
+{
+"name": "Brick Drop",
+"description": "Survival last-man-standing mode. Players walk on a platform made of blocks. When a player steps on a block, it disappears. Last player alive wins."
+}
+],
 
-  "places": [
-    {
-      "name": "Disco Room",
-      "description": "Social chill area in the lobby with music and lights. Not a game mode."
-    }
-  ],
+"places": [
+{
+"name": "Disco Room",
+"description": "Social chill area in the lobby with music and lights. Not a game mode."
+}
+],
 
-  "updates": [
-    "Improved Helper_Bot",
-    "Brick Drop added"
-  ]
+"latest_updates": [
+"Improved Helper_Bot",
+"Brick Drop added"
+],
+
+"update_history": [
+{
+"date": "2026-06-16",
+"name": "Brick Drop Update",
+"description": "Added Brick Drop mode."
+},
+{
+"date": "2026-06-16",
+"name": "Helper_Bot Update",
+"description": "Improved Helper_Bot."
+}
+]
 }
