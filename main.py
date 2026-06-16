@@ -16,23 +16,32 @@ client = Groq(api_key=os.environ.get("Helper_Bot"))
 with open("knowledge.json", "r", encoding="utf-8") as f:
     KNOWLEDGE = json.load(f)
 
-# ===== SYSTEM PROMPT Z BAZY =====
+# ===== SYSTEM PROMPT =====
 SYSTEM_PROMPT = f"""
 You are Helper_Bot in Roblox Mini Games.
 
-Creator: {KNOWLEDGE.get("creator", "Unknown")}
+Creator: {KNOWLEDGE["creator"]}
 
-Game modes: {", ".join(KNOWLEDGE.get("modes", []))}
+Game modes (use EXACT definitions):
 
-Places: {KNOWLEDGE.get("places", [])}
+- Obby:
+{KNOWLEDGE["modes"][0]["description"]}
 
-Updates: {KNOWLEDGE.get("updates", [])}
+- Jump or Die:
+{KNOWLEDGE["modes"][1]["description"]}
+
+- Brick Drop:
+{KNOWLEDGE["modes"][2]["description"]}
+
+Place (NOT a game mode):
+
+- Disco Room:
+{KNOWLEDGE["places"][0]["description"]}
 
 Rules:
-- Help players
-- Recommend only Mini Games modes
-- Respond in the same language as the player
-- Be friendly like an NPC helper
+- Never change or invent mechanics
+- Be short, clear, NPC-style
+- Respond in player's language
 """
 
 # ===== QUICK RESPONSES =====
@@ -49,7 +58,7 @@ THANK_RESPONSES = [
 def home():
     return "Helper_Bot działa!"
 
-# ===== ASK =====
+# ===== ASK ENDPOINT =====
 @app.route("/ask", methods=["POST"])
 def ask():
     try:
@@ -61,8 +70,8 @@ def ask():
         question = data["question"]
         print(f"[QUESTION] {question}")
 
-        # thanks system
-        if any(word in question.lower() for word in ["thanks","thank you","dzięki","dzieki","thx"]):
+        # szybkie thanks
+        if any(word in question.lower() for word in ["thanks", "thank you", "dzięki", "dzieki", "thx"]):
             return jsonify({"answer": random.choice(THANK_RESPONSES)})
 
         # AI CALL
@@ -97,7 +106,7 @@ def keep_alive():
 
 threading.Thread(target=keep_alive, daemon=True).start()
 
-# ===== START =====
+# ===== START SERVER =====
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
