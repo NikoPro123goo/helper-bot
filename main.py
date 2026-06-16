@@ -16,18 +16,19 @@ client = Groq(api_key=os.environ.get("Helper_Bot"))
 with open("knowledge.json", "r", encoding="utf-8") as f:
     KNOWLEDGE = json.load(f)
 
-# ===== UPDATE SYSTEM =====
 LATEST_UPDATES = "\n".join(KNOWLEDGE.get("latest_updates", []))
-
 UPDATE_HISTORY = "\n".join(
-    [
-        f"{u['date']} - {u['name']} - {u['description']}"
-        for u in KNOWLEDGE.get("update_history", [])
-    ]
+    f"{u['date']} - {u['name']} - {u['description']}"
+    for u in KNOWLEDGE.get("update_history", [])
+)
+EVENTS_TEXT = "\n".join(
+    f"{e['date']} - {e['name']} - {e['description']}"
+    for e in KNOWLEDGE.get("events", [])
 )
 
-print("[LATEST UPDATES]", KNOWLEDGE.get("latest_updates", []))
-print("[UPDATE HISTORY]", KNOWLEDGE.get("update_history", []))
+print("[UPDATES]", KNOWLEDGE.get("latest_updates", []))
+print("[HISTORY]", KNOWLEDGE.get("update_history", []))
+print("[EVENTS]", KNOWLEDGE.get("events", []))
 
 # ===== SYSTEM PROMPT =====
 SYSTEM_PROMPT = f"""
@@ -35,7 +36,7 @@ You are Helper_Bot in Roblox Mini Games.
 
 Creator: {KNOWLEDGE["creator"]}
 
-Game modes (ONLY use these definitions):
+Game modes:
 
 - Obby:
 {KNOWLEDGE["modes"][0]["description"]}
@@ -51,22 +52,25 @@ Place (NOT a mode):
 - Disco Room:
 {KNOWLEDGE["places"][0]["description"]}
 
-LATEST UPDATES (current):
+LATEST UPDATES:
 {LATEST_UPDATES}
 
-UPDATE HISTORY (older updates):
+UPDATE HISTORY:
 {UPDATE_HISTORY}
+
+EVENTS:
+{EVENTS_TEXT}
 
 RULES:
 - Do not invent anything not in knowledge
-- If user asks about latest updates, use LATEST UPDATES
-- If user asks about old updates, use UPDATE HISTORY
-- If user asks "what was before X", use UPDATE HISTORY
-- If there are no updates, say "No updates available yet"
-- Always respond in the same language as the user
-- If Polish → respond ONLY in Polish
-- If English → respond ONLY in English
-- Never mix languages
+- Use correct section when answering:
+  - latest updates → LATEST UPDATES
+  - old updates → UPDATE HISTORY
+  - events → EVENTS
+- If unknown → say you don't know
+- Respond in same language as user
+- Polish → Polish only
+- English → English only
 - Be short and NPC-like
 """
 
@@ -91,26 +95,19 @@ def ask():
         data = request.get_json(force=True, silent=True)
 
         if not data or "question" not in data:
-            print("[ERROR] Brak question")
             return jsonify({"answer": "No question received."})
 
         question = data["question"]
 
         print("[QUESTION]", question)
 
-        # thanks system
         if any(word in question.lower() for word in [
-            "thanks",
-            "thank you",
-            "dzięki",
-            "dzieki",
-            "thx"
+            "thanks", "thank you", "dzięki", "dzieki", "thx"
         ]):
-            answer = random.choice(THANK_RESPONSES)
-            print("[ANSWER - THANKS]", answer)
-            return jsonify({"answer": answer})
+            return jsonify({
+                "answer": random.choice(THANK_RESPONSES)
+            })
 
-        # AI CALL
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
@@ -123,17 +120,12 @@ def ask():
         answer = response.choices[0].message.content
 
         print("[ANSWER]", answer)
-        print("[JSON RESPONSE]", {"answer": answer})
 
         return jsonify({"answer": answer})
 
     except Exception as e:
-        print("[ERROR]", type(e).__name__, e)
-
-        return jsonify({
-            "answer": f"AI error: {type(e).__name__}",
-            "error": str(e)
-        })
+        print("[ERROR]", e)
+        return jsonify({"answer": "AI error"})
 
 # ===== KEEP ALIVE =====
 def keep_alive():
@@ -141,17 +133,14 @@ def keep_alive():
 
     while True:
         time.sleep(300)
-
         try:
-            r = req_lib.get(f"http://127.0.0.1:{port}/", timeout=10)
-            print(f"[PING] OK {r.status_code}")
-        except Exception as e:
-            print("[PING ERROR]", e)
+            req_lib.get(f"http://127.0.0.1:{port}/", timeout=10)
+        except:
+            pass
 
 threading.Thread(target=keep_alive, daemon=True).start()
 
-# ===== START SERVER =====
+# ===== RUN =====
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-
     app.run(host="0.0.0.0", port=port)
