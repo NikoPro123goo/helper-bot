@@ -12,17 +12,17 @@ app = Flask(__name__)
 # ===== GROQ API =====
 client = Groq(api_key=os.environ.get("Helper_Bot"))
 
-# ===== LOAD KNOWLEDGE BASE =====
+# ===== LOAD KNOWLEDGE =====
 with open("knowledge.json", "r", encoding="utf-8") as f:
     KNOWLEDGE = json.load(f)
 
-# ===== SYSTEM PROMPT =====
+# ===== SYSTEM PROMPT (STRICT MODE - NO HALLUCINATION) =====
 SYSTEM_PROMPT = f"""
 You are Helper_Bot in Roblox Mini Games.
 
 Creator: {KNOWLEDGE["creator"]}
 
-Game modes (use EXACT definitions):
+Game modes (ONLY use these, do NOT invent anything):
 
 - Obby:
 {KNOWLEDGE["modes"][0]["description"]}
@@ -38,13 +38,18 @@ Place (NOT a game mode):
 - Disco Room:
 {KNOWLEDGE["places"][0]["description"]}
 
-RULES:
-- Always respond in the same language as the user message
-- If user writes in Polish → respond ONLY in Polish
-- If user writes in English → respond ONLY in English
-- Never mix languages in one response
-- Never change or invent mechanics of game modes
-- Be short, clear, NPC-like
+Updates:
+{KNOWLEDGE.get("updates", [])}
+
+RULES (VERY IMPORTANT):
+- ONLY use information from KNOWLEDGE
+- NEVER invent new modes, updates or features
+- If something is not in KNOWLEDGE, say "I don't have information about that"
+- If updates are empty, say "No updates available yet"
+- Always respond in the same language as the user
+- If user writes Polish → respond ONLY in Polish
+- If user writes English → respond ONLY in English
+- Be short, NPC-like, and clear
 """
 
 # ===== QUICK RESPONSES =====
@@ -73,7 +78,7 @@ def ask():
         question = data["question"]
         print(f"[QUESTION] {question}")
 
-        # szybkie thanks
+        # thanks system
         if any(word in question.lower() for word in ["thanks", "thank you", "dzięki", "dzieki", "thx"]):
             return jsonify({"answer": random.choice(THANK_RESPONSES)})
 
