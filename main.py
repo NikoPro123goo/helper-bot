@@ -16,13 +16,13 @@ client = Groq(api_key=os.environ.get("Helper_Bot"))
 with open("knowledge.json", "r", encoding="utf-8") as f:
     KNOWLEDGE = json.load(f)
 
-# ===== SYSTEM PROMPT (STRICT MODE - NO HALLUCINATION) =====
+# ===== SYSTEM PROMPT =====
 SYSTEM_PROMPT = f"""
 You are Helper_Bot in Roblox Mini Games.
 
 Creator: {KNOWLEDGE["creator"]}
 
-Game modes (ONLY use these, do NOT invent anything):
+Game modes (ONLY use these definitions):
 
 - Obby:
 {KNOWLEDGE["modes"][0]["description"]}
@@ -33,23 +33,16 @@ Game modes (ONLY use these, do NOT invent anything):
 - Brick Drop:
 {KNOWLEDGE["modes"][2]["description"]}
 
-Place (NOT a game mode):
+Place (NOT a mode):
 
 - Disco Room:
 {KNOWLEDGE["places"][0]["description"]}
 
-Updates:
-{KNOWLEDGE.get("updates", [])}
-
-RULES (VERY IMPORTANT):
-- ONLY use information from KNOWLEDGE
-- NEVER invent new modes, updates or features
-- If something is not in KNOWLEDGE, say "I don't have information about that"
-- If updates are empty, say "No updates available yet"
-- Always respond in the same language as the user
-- If user writes Polish → respond ONLY in Polish
-- If user writes English → respond ONLY in English
-- Be short, NPC-like, and clear
+RULES:
+- Do not invent anything not in knowledge
+- If you don't know something, say you don't know
+- Respond in player's language (Polish or English)
+- Be short and NPC-like
 """
 
 # ===== QUICK RESPONSES =====
@@ -73,14 +66,18 @@ def ask():
         data = request.get_json(force=True, silent=True)
 
         if not data or "question" not in data:
+            print("[ERROR] Brak question")
             return jsonify({"answer": "No question received."})
 
         question = data["question"]
-        print(f"[QUESTION] {question}")
 
-        # thanks system
+        print("[QUESTION]", question)
+
+        # szybkie odpowiedzi na thanks
         if any(word in question.lower() for word in ["thanks", "thank you", "dzięki", "dzieki", "thx"]):
-            return jsonify({"answer": random.choice(THANK_RESPONSES)})
+            answer = random.choice(THANK_RESPONSES)
+            print("[ANSWER - THANKS]", answer)
+            return jsonify({"answer": answer})
 
         # AI CALL
         response = client.chat.completions.create(
@@ -94,10 +91,14 @@ def ask():
 
         answer = response.choices[0].message.content
 
+        # ===== DEBUG OUTPUT =====
+        print("[ANSWER]", answer)
+        print("[JSON RESPONSE]", {"answer": answer})
+
         return jsonify({"answer": answer})
 
     except Exception as e:
-        print(f"[ERROR] {e}")
+        print("[ERROR]", type(e).__name__, e)
         return jsonify({"answer": f"AI error: {type(e).__name__}", "error": str(e)})
 
 # ===== KEEP ALIVE =====
@@ -110,7 +111,7 @@ def keep_alive():
             r = req_lib.get(f"http://127.0.0.1:{port}/", timeout=10)
             print(f"[PING] OK {r.status_code}")
         except Exception as e:
-            print(f"[PING ERROR] {e}")
+            print("[PING ERROR]", e)
 
 threading.Thread(target=keep_alive, daemon=True).start()
 
