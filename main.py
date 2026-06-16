@@ -73,10 +73,11 @@ def ask():
 
 # ===== Self-ping: utrzymuje serwer aktywny =====
 def keep_alive():
+    port = os.environ.get("PORT", "5000")
     while True:
         time.sleep(300)  # co 5 minut
         try:
-            r = req_lib.get("http://127.0.0.1:5000/", timeout=10)
+            r = req_lib.get(f"http://127.0.0.1:{port}/", timeout=10)
             print(f"[PING] Serwer aktywny - status: {r.status_code}")
         except Exception as e:
             print(f"[PING] Błąd ping: {e}")
@@ -86,4 +87,5 @@ ping_thread.start()
 
 # Start serwera
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
