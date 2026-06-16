@@ -60,7 +60,7 @@ def ask():
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": question}
             ],
-            max_tokens=150
+            max_tokens=300
         )
 
         answer = response.choices[0].message.content
