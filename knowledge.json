@@ -1,0 +1,21 @@
+{
+  "creator": "NikoPro123goo",
+
+  "modes": [
+    "Obby",
+    "Jump or Die",
+    "Brick Drop",
+    "Hot Space"
+  ],
+
+  "places": [
+    {
+      "name": "Disco Room",
+      "description": "Miejsce odpoczynku i zabawy."
+    }
+  ],
+
+  "updates": [
+    "Ulepszono Helper_Bota"
+  ]
+}
