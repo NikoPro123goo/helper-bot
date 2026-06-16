@@ -17,18 +17,16 @@ with open("knowledge.json", "r", encoding="utf-8") as f:
     KNOWLEDGE = json.load(f)
 
 LATEST_UPDATES = "\n".join(KNOWLEDGE.get("latest_updates", []))
+
 UPDATE_HISTORY = "\n".join(
-    f"{u['date']} - {u['name']} - {u['description']}"
-    for u in KNOWLEDGE.get("update_history", [])
-)
-EVENTS_TEXT = "\n".join(
-    f"{e['date']} - {e['name']} - {e['description']}"
-    for e in KNOWLEDGE.get("events", [])
+    [
+        f"{u['date']} - {u['name']} - {u['description']}"
+        for u in KNOWLEDGE.get("update_history", [])
+    ]
 )
 
-print("[UPDATES]", KNOWLEDGE.get("latest_updates", []))
-print("[HISTORY]", KNOWLEDGE.get("update_history", []))
-print("[EVENTS]", KNOWLEDGE.get("events", []))
+print("[LATEST UPDATES]", KNOWLEDGE.get("latest_updates", []))
+print("[UPDATE HISTORY]", KNOWLEDGE.get("update_history", []))
 
 # ===== SYSTEM PROMPT =====
 SYSTEM_PROMPT = f"""
@@ -38,18 +36,18 @@ Creator: {KNOWLEDGE["creator"]}
 
 Game modes:
 
-- Obby:
+Obby:
 {KNOWLEDGE["modes"][0]["description"]}
 
-- Jump or Die:
+Jump or Die:
 {KNOWLEDGE["modes"][1]["description"]}
 
-- Brick Drop:
+Brick Drop:
 {KNOWLEDGE["modes"][2]["description"]}
 
 Place (NOT a mode):
 
-- Disco Room:
+Disco Room:
 {KNOWLEDGE["places"][0]["description"]}
 
 LATEST UPDATES:
@@ -58,20 +56,15 @@ LATEST UPDATES:
 UPDATE HISTORY:
 {UPDATE_HISTORY}
 
-EVENTS:
-{EVENTS_TEXT}
-
 RULES:
-- Do not invent anything not in knowledge
-- Use correct section when answering:
-  - latest updates → LATEST UPDATES
-  - old updates → UPDATE HISTORY
-  - events → EVENTS
-- If unknown → say you don't know
-- Respond in same language as user
-- Polish → Polish only
-- English → English only
-- Be short and NPC-like
+- Do not invent anything
+- If asked about updates, ONLY list them (no extra sentences)
+- NEVER tell the user to check sections or read more
+- NEVER add explanations unless asked
+- Always respond in user's language
+- If Polish → Polish only
+- If English → English only
+- Be extremely short like an NPC
 """
 
 # ===== QUICK RESPONSES =====
@@ -80,7 +73,7 @@ THANK_RESPONSES = [
     "Spoko!",
     "No problem!",
     "You're welcome!",
-    "Glad I could help!"
+    "Ok!"
 ]
 
 # ===== HOME =====
@@ -101,31 +94,34 @@ def ask():
 
         print("[QUESTION]", question)
 
+        # thanks system
         if any(word in question.lower() for word in [
             "thanks", "thank you", "dzięki", "dzieki", "thx"
         ]):
-            return jsonify({
-                "answer": random.choice(THANK_RESPONSES)
-            })
+            answer = random.choice(THANK_RESPONSES)
+            print("[ANSWER - THANKS]", answer)
+            return jsonify({"answer": answer})
 
+        # AI CALL
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": question}
             ],
-            max_tokens=250
+            max_tokens=200
         )
 
         answer = response.choices[0].message.content
 
         print("[ANSWER]", answer)
+        print("[JSON RESPONSE]", {"answer": answer})
 
         return jsonify({"answer": answer})
 
     except Exception as e:
-        print("[ERROR]", e)
-        return jsonify({"answer": "AI error"})
+        print("[ERROR]", type(e).__name__, e)
+        return jsonify({"answer": "AI error", "error": str(e)})
 
 # ===== KEEP ALIVE =====
 def keep_alive():
@@ -140,7 +136,7 @@ def keep_alive():
 
 threading.Thread(target=keep_alive, daemon=True).start()
 
-# ===== RUN =====
+# ===== START =====
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
