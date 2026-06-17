@@ -24,38 +24,60 @@
   ],
 
   "latest_updates": [
-    "Improved Helper_Bot",
-    "Brick Drop added"
+    "Brick Drop Update",
+    "Helper_Bot Upgrade"
   ],
 
   "update_history": [
     {
-      "date": "2025-07-06",
+      "date": "2025-06-10",
       "name": "Fix Update",
-      "description": "Fixed whole Mini Games system and improved stability."
+      "description": "Mini Games was heavily fixed and improved."
+    },
+    {
+      "date": "2025-07-30",
+      "name": "Checkpoint Update",
+      "description": "Added checkpoints to Mini Games."
+    },
+    {
+      "date": "2025-08-03",
+      "name": "Decorates Update",
+      "description": "Added decorations to Mini Games."
+    },
+    {
+      "date": "2025-08-20",
+      "name": "Sonic Event",
+      "description": "Temporary Sonic-style Obby mode was added."
+    },
+    {
+      "date": "2025-09-21",
+      "name": "Disco Update",
+      "description": "Added the Disco Room."
+    },
+    {
+      "date": "2025-10-22",
+      "name": "Jump or Die Update",
+      "description": "Added the Jump or Die mode."
+    },
+    {
+      "date": "2025-12-06",
+      "name": "Christmas Event",
+      "description": "The entire Mini Games map received a Christmas theme."
+    },
+    {
+      "date": "2026-01-04",
+      "name": "Helper_Bot Update",
+      "description": "Added Helper_Bot."
     },
     {
       "date": "2026-06-16",
       "name": "Brick Drop Update",
-      "description": "Added Brick Drop mode."
+      "description": "Added the Brick Drop mode."
     },
     {
       "date": "2026-06-16",
-      "name": "Helper_Bot Update",
-      "description": "Improved Helper_Bot."
-    }
-  ],
-
-  "events": [
-    {
-      "date": "2025-09-11",
-      "name": "Sonic Event",
-      "description": "Special Sonic-themed event in Mini Games with exclusive content."
-    },
-    {
-      "date": "2025-10-31",
-      "name": "Halloween Event",
-      "description": "Halloween special event with themed gameplay and decorations."
+      "name": "Helper_Bot Upgrade",
+      "description": "Improved Helper_Bot behavior and responses."
     }
   ]
 }
