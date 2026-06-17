@@ -104,44 +104,44 @@ def ask():
 
         print("[QUESTION]", question)
 
-# szybkie odpowiedzi na podziękowania
-if any(word in question.lower() for word in [
-    "thanks",
-    "thank you",
-    "dzięki",
-    "dzieki",
-    "thx"
-]):
-    answer = random.choice(THANK_RESPONSES)
-    print("[ANSWER - THANKS]", answer)
-    return jsonify({"answer": answer})
+        # ===== THANKS =====
+        if any(word in question.lower() for word in [
+            "thanks",
+            "thank you",
+            "dzięki",
+            "dzieki",
+            "thx"
+        ]):
+            answer = random.choice(THANK_RESPONSES)
+            print("[ANSWER - THANKS]", answer)
+            return jsonify({"answer": answer})
 
-# ===== LOSOWY TRYB =====
-recommend_keywords = [
-    "jaki tryb jest najlepszy",
-    "który tryb polecasz",
-    "jaki tryb polecasz",
-    "najlepszy tryb",
-    "best mode",
-    "which mode do you recommend",
-    "recommended mode",
-    "favorite mode"
-]
+        # ===== LOSOWY TRYB =====
+        recommend_keywords = [
+            "jaki tryb jest najlepszy",
+            "który tryb polecasz",
+            "jaki tryb polecasz",
+            "najlepszy tryb",
+            "best mode",
+            "which mode do you recommend",
+            "recommended mode",
+            "favorite mode"
+        ]
 
-if any(k in question.lower() for k in recommend_keywords):
+        if any(k in question.lower() for k in recommend_keywords):
 
-    mode = random.choice([
-        "Obby",
-        "Jump Or Die",
-        "Brick Drop"
-    ])
+            mode = random.choice([
+                "Obby",
+                "Jump Or Die",
+                "Brick Drop"
+            ])
 
-    return jsonify({
-        "answer": f"Polecam tryb {mode}."
-    })
+            return jsonify({
+                "answer": f"Polecam tryb {mode}."
+            })
 
-# ===== AI CALL =====
-response = client.chat.completions.create(
+        # ===== AI CALL =====
+        response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
