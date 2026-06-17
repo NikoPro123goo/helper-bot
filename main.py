@@ -58,13 +58,20 @@ UPDATE HISTORY:
 
 RULES:
 - Do not invent anything
-- If asked about updates, ONLY list them (no extra sentences)
+- Use ONLY information from the knowledge base
+- If asked about latest updates, use LATEST UPDATES
+- If asked about old updates, dates, history, or what happened on a specific date, use UPDATE HISTORY
+- If asked what update came before another update, use UPDATE HISTORY
+- If asked when something was added, use UPDATE HISTORY
+- If asked about updates, give the exact update names
 - NEVER tell the user to check sections or read more
-- NEVER add explanations unless asked
+- NEVER add information that is not in the knowledge base
+- If you do not know something, say you do not know
 - Always respond in user's language
 - If Polish → Polish only
 - If English → English only
-- Be extremely short like an NPC
+- Never mix languages
+- Be short like an NPC helper
 """
 
 # ===== QUICK RESPONSES =====
@@ -94,15 +101,19 @@ def ask():
 
         print("[QUESTION]", question)
 
-        # thanks system
+        # szybkie odpowiedzi na podziękowania
         if any(word in question.lower() for word in [
-            "thanks", "thank you", "dzięki", "dzieki", "thx"
+            "thanks",
+            "thank you",
+            "dzięki",
+            "dzieki",
+            "thx"
         ]):
             answer = random.choice(THANK_RESPONSES)
             print("[ANSWER - THANKS]", answer)
             return jsonify({"answer": answer})
 
-        # AI CALL
+        # ===== AI CALL =====
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
@@ -121,7 +132,11 @@ def ask():
 
     except Exception as e:
         print("[ERROR]", type(e).__name__, e)
-        return jsonify({"answer": "AI error", "error": str(e)})
+
+        return jsonify({
+            "answer": "AI error",
+            "error": str(e)
+        })
 
 # ===== KEEP ALIVE =====
 def keep_alive():
@@ -129,6 +144,7 @@ def keep_alive():
 
     while True:
         time.sleep(300)
+
         try:
             req_lib.get(f"http://127.0.0.1:{port}/", timeout=10)
         except:
